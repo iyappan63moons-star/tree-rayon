@@ -101,8 +101,8 @@ fn risk_benchmark(c: &mut Criterion) {
 
 
     let pool = ThreadPoolBuilder::new()
-        .num_threads(8)
-        
+        .num_threads(4)
+
         // .num_threads(allowed_cores.len()) 
         // .start_handler({
         //     let allowed_cores = allowed_cores.clone();
@@ -114,6 +114,7 @@ fn risk_benchmark(c: &mut Criterion) {
         //         );
         //     }
         // })
+        
         .build()
         .unwrap();
 
