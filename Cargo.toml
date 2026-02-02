@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 rayon = "1.11.0"
+core_affinity = "0.8"
 
 [dev-dependencies]
 criterion = "0.5" 

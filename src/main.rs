@@ -83,18 +83,14 @@ fn main() {
         Position { qty: -0.5, price: 20_000.0 },
     ];
 
-    let accounts = vec![
-        Account { positions: &POSITIONS_A },
-        Account { positions: &POSITIONS_B },
-        Account { positions: &POSITIONS_A },
-        Account { positions: &POSITIONS_B },
-    ];
+    // let accounts = vec![
+    //     Account { positions: &POSITIONS_A },
+    //     Account { positions: &POSITIONS_B },
+    //     Account { positions: &POSITIONS_A },
+    //     Account { positions: &POSITIONS_B },
+    // ];
 
-    let total_risk = pool.install(|| compute_total_risk(&accounts));
-
-    println!("=== TOTAL RISK ===");
-    println!("Exposure  : {:.2}", total_risk.exposure);
-    println!("Worst PnL : {:.2}", total_risk.worst_pnl);
+    // let total_risk = pool.install(|| compute_total_risk(&accounts));
 
 
 }
