@@ -1,8 +1,10 @@
+// cross method
+// find exposure and uPnL
+
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rayon::prelude::*;
-use core_affinity::CoreId;
+// use core_affinity::CoreId;
 use rayon::ThreadPoolBuilder;
-
 
 
 #[derive(Clone, Copy)]
@@ -65,10 +67,19 @@ fn compute_account_risks(accounts: &[Account]) -> Vec<Risk> {
     
 }
 
+fn compute_account_risks_seq(accounts: &[Account]) -> Vec<Risk> {
+    accounts
+        .iter()
+        .map(calc_account_risk)
+        .collect()
+}
+
+
 
 fn risk_benchmark(c: &mut Criterion) {
 
     const N_ACCOUNTS: usize = 1_000_000;
+    // const N_ACCOUNTS: usize = 10;
 
     let accounts: Vec<Account> = (0..N_ACCOUNTS)
         .map(|i| Account {
@@ -79,22 +90,40 @@ fn risk_benchmark(c: &mut Criterion) {
         })
         .collect();
 
-    let cores = core_affinity::get_core_ids().expect("No cores found");
+    // let cores = core_affinity::get_core_ids().expect("No cores found");
+
+    // let allowed_cores = vec![
+    //     cores[2],
+    //     cores[4],
+    //     cores[6],
+    //     cores[8],
+    // ];
+
 
     let pool = ThreadPoolBuilder::new()
-        .num_threads(8) 
-        .start_handler(move |thread_index| {
-            let core = cores[thread_index % cores.len()];
-            core_affinity::set_for_current(core);
-        })
+        .num_threads(8)
+        
+        // .num_threads(allowed_cores.len()) 
+        // .start_handler({
+        //     let allowed_cores = allowed_cores.clone();
+        //     move |i| {
+        //         core_affinity::set_for_current(allowed_cores[i]);
+        //         println!(
+        //             "Rayon worker {} pinned to core {:?}",
+        //             i, allowed_cores[i]
+        //         );
+        //     }
+        // })
         .build()
         .unwrap();
 
+    
     c.bench_with_input(
         BenchmarkId::new("account_risk", N_ACCOUNTS),
         &accounts,
         |b, accounts| {
             b.iter(|| {
+
                 pool.install(|| {
 
                     let _account_risks = compute_account_risks(accounts);
@@ -102,7 +131,7 @@ fn risk_benchmark(c: &mut Criterion) {
                     // for (i, risk) in account_risks.iter().enumerate() {
                     //     println!(
                     //         "Account {} - Exposure: {:.2}, Worst PnL: {:.2}",
-                    //         i + 1,  // Account index (1-based)
+                    //         i + 1, 
                     //         risk.exposure,
                     //         risk.worst_pnl
                     //     );
@@ -112,6 +141,19 @@ fn risk_benchmark(c: &mut Criterion) {
             });
         },
     );
+
+
+
+    c.bench_with_input(
+        BenchmarkId::new("account_risk_seq", N_ACCOUNTS),
+        &accounts,
+        |b, accounts| {
+            b.iter(|| {
+                let _account_risks = compute_account_risks_seq(accounts);
+            });
+        },
+    );
+
 
 }
 
